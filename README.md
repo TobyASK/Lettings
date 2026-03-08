@@ -1,77 +1,144 @@
-## Résumé
+# OC Lettings (architecture modulaire)
 
-Site web d'Orange County Lettings
+## Objectif
 
-## Développement local
+Application Django découpée en 3 apps :
+
+- `oc_lettings_site` : cœur applicatif (home, config, erreurs) ;
+- `lettings` : gestion des locations ;
+- `profiles` : gestion des profils.
+
+Le projet inclut :
+
+- refonte modulaire ;
+- réduction de dette technique ;
+- tests + couverture > 80 % ;
+- intégration Sentry + logging ;
+- pipeline CI (GitHub Actions) ;
+- conteneurisation Docker ;
+- documentation Sphinx + Read The Docs.
+
+## Installation locale
 
 ### Prérequis
 
-- Compte GitHub avec accès en lecture à ce repository
-- Git CLI
-- SQLite3 CLI
-- Interpréteur Python, version 3.6 ou supérieure
+- Python 3.12
+- Git
+- Docker (optionnel pour run conteneur)
 
-Dans le reste de la documentation sur le développement local, il est supposé que la commande `python` de votre OS shell exécute l'interpréteur Python ci-dessus (à moins qu'un environnement virtuel ne soit activé).
+### Démarrage
 
-### macOS / Linux
+1. Cloner le repo.
+2. Installer les dépendances :
 
-#### Cloner le repository
+  - `pip install -r requirements.txt`
 
-- `cd /path/to/put/project/in`
-- `git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git`
+3. Lancer le serveur :
 
-#### Créer l'environnement virtuel
+  - `python manage.py runserver`
 
-- `cd /path/to/Python-OC-Lettings-FR`
-- `python -m venv venv`
-- `apt-get install python3-venv` (Si l'étape précédente comporte des erreurs avec un paquet non trouvé sur Ubuntu)
-- Activer l'environnement `source venv/bin/activate`
-- Confirmer que la commande `python` exécute l'interpréteur Python dans l'environnement virtuel
-`which python`
-- Confirmer que la version de l'interpréteur Python est la version 3.6 ou supérieure `python --version`
-- Confirmer que la commande `pip` exécute l'exécutable pip dans l'environnement virtuel, `which pip`
-- Pour désactiver l'environnement, `deactivate`
+4. Ouvrir `http://127.0.0.1:8000`.
 
-#### Exécuter le site
+### Linting
 
-- `cd /path/to/Python-OC-Lettings-FR`
-- `source venv/bin/activate`
-- `pip install --requirement requirements.txt`
-- `python manage.py runserver`
-- Aller sur `http://localhost:8000` dans un navigateur.
-- Confirmer que le site fonctionne et qu'il est possible de naviguer (vous devriez voir plusieurs profils et locations).
-
-#### Linting
-
-- `cd /path/to/Python-OC-Lettings-FR`
-- `source venv/bin/activate`
 - `flake8`
 
-#### Tests unitaires
+### Tests + couverture
 
-- `cd /path/to/Python-OC-Lettings-FR`
-- `source venv/bin/activate`
 - `pytest`
 
-#### Base de données
+Le seuil de couverture minimal est fixé à 80 % (`setup.cfg`).
 
-- `cd /path/to/Python-OC-Lettings-FR`
-- Ouvrir une session shell `sqlite3`
-- Se connecter à la base de données `.open oc-lettings-site.sqlite3`
-- Afficher les tables dans la base de données `.tables`
-- Afficher les colonnes dans le tableau des profils, `pragma table_info(Python-OC-Lettings-FR_profile);`
-- Lancer une requête sur la table des profils, `select user_id, favorite_city from
-  Python-OC-Lettings-FR_profile where favorite_city like 'B%';`
-- `.quit` pour quitter
+## Administration
 
-#### Panel d'administration
+- URL : `/admin`
+- identifiants par défaut (si base initiale) : `admin` / `Abc1234!`
 
-- Aller sur `http://localhost:8000/admin`
-- Connectez-vous avec l'utilisateur `admin`, mot de passe `Abc1234!`
+## Variables d'environnement
 
-### Windows
+Copier `.env.example` et adapter les valeurs :
 
-Utilisation de PowerShell, comme ci-dessus sauf :
+- `DEBUG`
+- `SECRET_KEY`
+- `ALLOWED_HOSTS`
+- `LOG_LEVEL`
+- `SENTRY_DSN`
+- `SENTRY_TRACES_SAMPLE_RATE`
+- `SENTRY_ENVIRONMENT`
 
-- Pour activer l'environnement virtuel, `.\venv\Scripts\Activate.ps1` 
-- Remplacer `which <my-command>` par `(Get-Command <my-command>).Path`
+## Sentry
+
+L'initialisation est automatique si `SENTRY_DSN` est défini.
+
+Pour tester : provoquer une erreur (URL invalide, exception volontaire) et vérifier la remontée sur le projet Sentry.
+
+Route de test dédiée : `/sentry-debug/`.
+
+## Docker
+
+### Build local
+
+- `docker build -t <dockerhub_user>/oc-lettings:latest .`
+
+### Run local
+
+- `docker run --rm -p 8000:8000 --env-file .env <dockerhub_user>/oc-lettings:latest`
+
+### Push Docker Hub
+
+- `docker login`
+- `docker push <dockerhub_user>/oc-lettings:latest`
+
+### Extraire l'image Docker Hub
+
+- `docker pull <dockerhub_user>/oc-lettings:latest`
+
+## CI/CD
+
+Workflow : `.github/workflows/ci.yml`
+
+Déclenchement automatique sur `push` et `pull_request`.
+
+Étapes :
+
+1. Installation dépendances ;
+2. `flake8` ;
+3. `pytest` + couverture ;
+4. build image Docker ;
+5. push Docker Hub (si secrets configurés) ;
+6. déclenchement Render Deploy Hook (sur `main`).
+
+Secrets GitHub à définir :
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+- `RENDER_DEPLOY_HOOK_URL`
+
+## Déploiement (exemple Render)
+
+1. Créer un service Web Docker.
+2. Pointer sur le repository GitHub.
+3. Ajouter les variables d'environnement (notamment `SECRET_KEY`, `DEBUG=False`, `ALLOWED_HOSTS`, `SENTRY_DSN`).
+4. Déployer et récupérer l'URL publique.
+
+Le fichier `render.yaml` est fourni pour rendre le déploiement répétable.
+
+## Démonstration demandée
+
+1. Modifier le titre de la page home dans `templates/index.html`.
+2. Commit / push.
+3. Redéployer.
+4. Vérifier le nouveau titre sur l'URL publique.
+5. Montrer l'extraction Docker Hub :
+
+  - `docker pull <dockerhub_user>/oc-lettings:latest`
+
+## Documentation technique
+
+Sources Sphinx dans `docs/`.
+
+Build local documentation :
+
+- `sphinx-build -b html docs docs/_build/html`
+
+Configuration Read the Docs : `.readthedocs.yaml`.

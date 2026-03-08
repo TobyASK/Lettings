@@ -1,0 +1,1 @@
+"""Lettings app package."""
