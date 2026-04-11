@@ -14,6 +14,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # SeparateDatabaseAndState permet d'exécuter des opérations sur l'état
+        # Django (ce que l'ORM "croit") sans toucher la base de données réelle.
+        # Ici les tables existent déjà (créées par oc_lettings_site) ;
+        # on déclare simplement à Django qu'elles appartiennent désormais à cette app.
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.CreateModel(
@@ -36,6 +40,7 @@ class Migration(migrations.Migration):
                         ('country_iso_code', models.CharField(max_length=3)),
                     ],
                     options={
+                        # Conserve le nom de table original pour ne pas perdre les données
                         'db_table': 'oc_lettings_site_address',
                     },
                 ),
@@ -61,10 +66,11 @@ class Migration(migrations.Migration):
                         ),
                     ],
                     options={
+                        # Conserve le nom de table original pour ne pas perdre les données
                         'db_table': 'oc_lettings_site_letting',
                     },
                 ),
             ],
-            database_operations=[],
+            database_operations=[],  # aucun SQL exécuté : les tables existent déjà
         ),
     ]

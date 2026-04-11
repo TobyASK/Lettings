@@ -13,6 +13,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Même principe que la migration 0001 : ajustements d'état uniquement,
+        # sans aucune modification SQL (les colonnes existent déjà en base)
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.AlterModelOptions(
@@ -62,6 +64,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            database_operations=[],
+            database_operations=[],  # aucun SQL exécuté
         ),
     ]
