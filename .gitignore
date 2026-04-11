@@ -6,3 +6,4 @@ venv
 docs/_build/
 staticfiles/
 .env
+*.sqlite3
