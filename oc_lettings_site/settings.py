@@ -117,7 +117,8 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
+# Type de clé primaire par défaut pour les modèles sans pk explicite
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 USE_TZ = True
 
