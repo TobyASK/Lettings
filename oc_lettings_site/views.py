@@ -23,9 +23,3 @@ def custom_500(request):
     """Render custom 500 page."""
     logger.exception('500 error triggered for path %s', request.path)
     return render(request, '500.html', status=500)
-
-
-def sentry_debug(request):
-    """Raise an exception to test Sentry integration."""
-    logger.error('Sentry debug route called')
-    raise RuntimeError('Sentry test exception from /sentry-debug/')

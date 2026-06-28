@@ -2,12 +2,12 @@
 
 ## Statut global
 
-- ✅ Refonte architecture modulaire terminée.
-- ✅ Réduction de dette technique terminée.
-- ✅ Intégration Sentry + logs terminée.
-- ✅ Pipeline CI/CD + Docker mis en place.
-- ✅ Documentation Sphinx + Read the Docs mise en place.
-- ✅ Validation locale lint/tests/couverture effectuée.
+- Refonte architecture modulaire terminée.
+- Réduction de dette technique terminée.
+- Intégration Sentry + logs terminée.
+- Pipeline CI/CD + Docker mis en place.
+- Documentation Sphinx + Read the Docs mise en place.
+- Validation locale lint/tests/couverture effectuée.
 
 ---
 
@@ -71,9 +71,9 @@
 
 ### Résultats mesurés
 
-- `flake8` : ✅ sans erreur
-- `pytest` : ✅ 9 tests passés
-- Couverture : ✅ **89.80%** (seuil demandé > 80%)
+- `flake8` : sans erreur
+- `pytest` : 9 tests passés
+- Couverture : **89.80%** (seuil demandé > 80%)
 
 ---
 
@@ -95,7 +95,7 @@
 
 ### Validation erreur
 
-- Ajout route de test Sentry : `/sentry-debug/`.
+- Validation Sentry via erreurs applicatives et URL invalides.
 
 ---
 
@@ -133,7 +133,7 @@
 
 ### Limite constatée localement
 
-- Docker daemon non démarré au moment du test (CLI installée mais moteur indisponible), donc build/pull réels non exécutés sur cette session.
+- Le daemon Docker n'etait pas demarre au moment du test. La CLI etait disponible, mais le moteur ne l'etait pas, donc les commandes de build/pull n'ont pas pu etre executees dans cette session.
 
 ---
 
@@ -213,3 +213,7 @@
 - Pousser l’image sur Docker Hub avec tes credentials.
 - Déployer sur Render (ou autre hébergeur) avec variables de prod.
 - Configurer le projet Read the Docs pointant sur ce repo.
+
+---
+
+Document de suivi du projet. Les elements ci-dessus correspondent a l'etat du repository et des validations realisees localement.

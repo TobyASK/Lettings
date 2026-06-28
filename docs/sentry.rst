@@ -14,4 +14,4 @@ Les logs applicatifs passent par la configuration ``LOGGING`` dans les settings.
 Validation rapide
 -----------------
 
-Appeler ``/sentry-debug/`` pour déclencher une exception de test.
+Provoquer une erreur applicative (ou une URL invalide) et verifier sa remontee dans Sentry.

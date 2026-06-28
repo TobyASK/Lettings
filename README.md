@@ -33,11 +33,15 @@ Le projet inclut :
 
   - `pip install -r requirements.txt`
 
-3. Lancer le serveur :
+3. Appliquer les migrations :
+
+  - `python manage.py migrate`
+
+4. Lancer le serveur :
 
   - `python manage.py runserver`
 
-4. Ouvrir `http://127.0.0.1:8000`.
+5. Ouvrir `http://127.0.0.1:8000`.
 
 ### Linting
 
@@ -52,7 +56,7 @@ Le seuil de couverture minimal est fixé à 80 % (`setup.cfg`).
 ## Administration
 
 - URL : `/admin`
-- identifiants par défaut (si base initiale) : `admin` / `Abc1234!`
+- créer un compte admin : `python manage.py createsuperuser`
 
 ## Variables d'environnement
 
@@ -70,9 +74,7 @@ Copier `.env.example` et adapter les valeurs :
 
 L'initialisation est automatique si `SENTRY_DSN` est défini.
 
-Pour tester : provoquer une erreur (URL invalide, exception volontaire) et vérifier la remontée sur le projet Sentry.
-
-Route de test dédiée : `/sentry-debug/`.
+Pour tester : provoquer une erreur (URL invalide ou exception applicative) et vérifier la remontée sur le projet Sentry.
 
 ## Docker
 
