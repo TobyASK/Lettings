@@ -3,7 +3,7 @@ services:
     name: oc-lettings
     runtime: docker
     plan: free
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: DEBUG
         value: "False"
