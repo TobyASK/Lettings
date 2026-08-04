@@ -2,6 +2,7 @@
 
 import logging
 
+import sentry_sdk
 from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
@@ -28,4 +29,5 @@ def custom_500(request):
 def sentry_debug(request):
     """Raise an exception to test Sentry integration."""
     logger.error('Sentry debug route called')
+    sentry_sdk.capture_message('Sentry debug route called')
     raise RuntimeError('Sentry test exception from /sentry-debug/')
