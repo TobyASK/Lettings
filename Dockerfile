@@ -23,5 +23,5 @@ RUN DEBUG=${DJANGO_DEBUG} ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS} SECRET_KEY=${DJA
 
 EXPOSE 8000
 
-# Lance les migrations, crée un superuser de démo si absent, puis démarre le serveur.
-CMD python manage.py migrate --noinput && (python manage.py createsuperuser --noinput || true) && gunicorn oc_lettings_site.wsgi:application --bind 0.0.0.0:8000
+# Lance les migrations, force les credentials admin de démo, puis démarre le serveur.
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py shell -c \"from django.contrib.auth import get_user_model; U=get_user_model(); u,_=U.objects.get_or_create(username='admin', defaults={'email':'admin@lettings.com'}); u.email='admin@lettings.com'; u.is_staff=True; u.is_superuser=True; u.is_active=True; u.set_password('admin123'); u.save()\" && gunicorn oc_lettings_site.wsgi:application --bind 0.0.0.0:8000"]
