@@ -80,5 +80,6 @@ jobs:
       - name: Trigger Render deploy
         # Render expose un webhook HTTP pour déclencher un redéploiement à la demande ;
         # on ne le fait que sur main pour ne pas redéployer les branches de feature
-        if: github.ref == 'refs/heads/main' && secrets.RENDER_DEPLOY_HOOK_URL != ''
+          # on ne le fait que sur master pour ne pas redéployer les branches de feature
+          if: github.ref == 'refs/heads/master' && secrets.RENDER_DEPLOY_HOOK_URL != ''
         run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
