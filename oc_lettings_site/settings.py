@@ -5,17 +5,34 @@ import os
 from pathlib import Path
 
 import sentry_sdk
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
+from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
 
+# .parent remonte de settings.py → oc_lettings_site/ → racine du projet
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Local development: load environment from .env when present.
+load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.getenv(
-    'SECRET_KEY',
-    'fp$9^593hsriajg$_%=5trot9g!1qa@ew(o-1#@=&4%=hp46(s',
-)
+
+# Accepte '1', 'true' ou 'yes' pour éviter les surprises de casse
 DEBUG = os.getenv('DEBUG', 'True').lower() in {'1', 'true', 'yes'}
 
+SECRET_KEY = os.getenv('SECRET_KEY', '')
+if not SECRET_KEY:
+    if DEBUG:
+        # En développement uniquement, on génère une clé volatile
+        # pour éviter toute clé en clair dans le dépôt.
+        SECRET_KEY = get_random_secret_key()
+    else:
+        raise ImproperlyConfigured(
+            'SECRET_KEY environment variable is required when DEBUG is False.'
+        )
+
+# La variable d'env contient une liste séparée par des virgules ;
+# strip() filtre les espaces et élimine les entrées vides après split
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
@@ -39,6 +56,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # WhiteNoise doit être juste après SecurityMiddleware pour servir
+    # les fichiers statiques sans passer par Django en production
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -111,27 +130,30 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
+# Type de clé primaire par défaut pour les modèles sans pk explicite
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 USE_TZ = True
 
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-if DEBUG:
-    STATICFILES_STORAGE = (
-        'django.contrib.staticfiles.storage.StaticFilesStorage'
-    )
-else:
-    STATICFILES_STORAGE = (
-        'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    )
+# En production : CompressedStaticFilesStorage compresse les fichiers (gzip/brotli)
+# pour réduire leur taille, sans générer de manifest strict qui bloquerait
+# le build si le CSS référence des assets absents du repo.
+STATICFILES_STORAGE = (
+    'django.contrib.staticfiles.storage.StaticFilesStorage'
+    if DEBUG else
+    'whitenoise.storage.CompressedStaticFilesStorage'
+)
 
 
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
+    'version': 1,  # seule valeur supportée par Django
+    'disable_existing_loggers': False,  # conserve les loggers Django déjà créés au démarrage
     'formatters': {
         'standard': {
             'format': '%(asctime)s %(levelname)s %(name)s %(message)s',
@@ -147,28 +169,6 @@ LOGGING = {
         'handlers': ['console'],
         'level': LOG_LEVEL,
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': LOG_LEVEL,
-            'propagate': False,
-        },
-        'oc_lettings_site': {
-            'handlers': ['console'],
-            'level': LOG_LEVEL,
-            'propagate': False,
-        },
-        'lettings': {
-            'handlers': ['console'],
-            'level': LOG_LEVEL,
-            'propagate': False,
-        },
-        'profiles': {
-            'handlers': ['console'],
-            'level': LOG_LEVEL,
-            'propagate': False,
-        },
-    },
 }
 
 
@@ -177,9 +177,11 @@ if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
+        # 0.2 = 20 % des requêtes font l'objet d'un suivi de performance
         traces_sample_rate=float(
             os.getenv('SENTRY_TRACES_SAMPLE_RATE', '0.2')
         ),
+        # Transmet les données utilisateur (IP, session) pour faciliter le débogage
         send_default_pii=True,
         environment=os.getenv('SENTRY_ENVIRONMENT', 'development'),
     )

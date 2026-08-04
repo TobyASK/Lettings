@@ -10,7 +10,7 @@ from profiles.models import Profile
 @pytest.fixture
 def profile_obj(db):
     """Create a profile fixture."""
-    user = User.objects.create_user(username='alice', password='Abc1234!')
+    user = User.objects.create_user(username='alice')
     return Profile.objects.create(user=user, favorite_city='Paris')
 
 

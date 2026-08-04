@@ -33,15 +33,11 @@ Le projet inclut :
 
   - `pip install -r requirements.txt`
 
-3. Appliquer les migrations :
-
-  - `python manage.py migrate`
-
-4. Lancer le serveur :
+3. Lancer le serveur :
 
   - `python manage.py runserver`
 
-5. Ouvrir `http://127.0.0.1:8000`.
+4. Ouvrir `http://127.0.0.1:8000`.
 
 ### Linting
 
@@ -56,7 +52,7 @@ Le seuil de couverture minimal est fixé à 80 % (`setup.cfg`).
 ## Administration
 
 - URL : `/admin`
-- créer un compte admin : `python manage.py createsuperuser`
+- identifiants de démonstration (image Docker) : `admin` / `admin123`
 
 ## Variables d'environnement
 
@@ -70,11 +66,19 @@ Copier `.env.example` et adapter les valeurs :
 - `SENTRY_TRACES_SAMPLE_RATE`
 - `SENTRY_ENVIRONMENT`
 
+En local, le fichier `.env` est chargé automatiquement au démarrage.
+
+Dans GitHub Actions, toutes les variables sont lues depuis les
+`Repository variables` (`vars.*`) et `Repository secrets` (`secrets.*`),
+sans valeur codée en dur dans le workflow.
+
 ## Sentry
 
 L'initialisation est automatique si `SENTRY_DSN` est défini.
 
-Pour tester : provoquer une erreur (URL invalide ou exception applicative) et vérifier la remontée sur le projet Sentry.
+Pour tester : provoquer une erreur (URL invalide, exception volontaire) et vérifier la remontée sur le projet Sentry.
+
+Route de test dédiée : `/sentry-debug/`.
 
 ## Docker
 
@@ -112,9 +116,19 @@ Déclenchement automatique sur `push` et `pull_request`.
 
 Secrets GitHub à définir :
 
-- `DOCKERHUB_USERNAME`
+- `DJANGO_SECRET_KEY`
+- `SENTRY_DSN`
 - `DOCKERHUB_TOKEN`
 - `RENDER_DEPLOY_HOOK_URL`
+
+Variables GitHub à définir :
+
+- `DOCKERHUB_USERNAME`
+- `DJANGO_DEBUG`
+- `DJANGO_ALLOWED_HOSTS`
+- `DJANGO_LOG_LEVEL`
+- `SENTRY_TRACES_SAMPLE_RATE`
+- `SENTRY_ENVIRONMENT`
 
 ## Déploiement (exemple Render)
 

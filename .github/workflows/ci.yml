@@ -2,8 +2,18 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: ["**"]  # déclenché sur toutes les branches, pas seulement main
   pull_request:
+
+env:
+  DJANGO_SETTINGS_MODULE: oc_lettings_site.settings
+  DEBUG: ${{ vars.DJANGO_DEBUG }}
+  ALLOWED_HOSTS: ${{ vars.DJANGO_ALLOWED_HOSTS }}
+  LOG_LEVEL: ${{ vars.DJANGO_LOG_LEVEL }}
+  SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE }}
+  SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT }}
 
 jobs:
   test:
@@ -27,46 +37,48 @@ jobs:
         run: flake8
 
       - name: Test with coverage
-        env:
-          DJANGO_SETTINGS_MODULE: oc_lettings_site.settings
         run: pytest
 
   docker:
     runs-on: ubuntu-latest
-    needs: test
+    needs: test  # ce job ne démarre que si le job 'test' a réussi
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
+        # Buildx est le backend étendu de Docker ; requis par setup-buildx-action
+        # et permet les builds multi-plateforme si nécessaire
         uses: docker/setup-buildx-action@v3
 
       - name: Build image
         run: |
-          docker build -t oc-lettings:ci .
+          docker build \
+            --build-arg DJANGO_DEBUG="${{ vars.DJANGO_DEBUG }}" \
+            --build-arg DJANGO_ALLOWED_HOSTS="${{ vars.DJANGO_ALLOWED_HOSTS }}" \
+            --build-arg DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
+            -t oc-lettings:ci .
 
-      - name: Push Docker Hub image (optional)
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          if [ -n "$DOCKERHUB_USERNAME" ] && [ -n "$DOCKERHUB_TOKEN" ]; then
-            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker tag oc-lettings:ci "$DOCKERHUB_USERNAME/oc-lettings:latest"
-            docker tag oc-lettings:ci "$DOCKERHUB_USERNAME/oc-lettings:${{ github.sha }}"
-            docker push "$DOCKERHUB_USERNAME/oc-lettings:latest"
-            docker push "$DOCKERHUB_USERNAME/oc-lettings:${{ github.sha }}"
-          else
-            echo "Docker Hub secrets not set, skipping push."
-          fi
+      - name: Login to Docker Hub
+        # Ignoré si la variable DOCKERHUB_USERNAME n'est pas configurée
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Trigger Render deploy hook (optional)
-        env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      - name: Push to Docker Hub
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/main" ] && [ -n "$RENDER_DEPLOY_HOOK_URL" ]; then
-            curl -X POST "$RENDER_DEPLOY_HOOK_URL"
-          else
-            echo "Render deploy hook skipped (not main or secret missing)."
-          fi
+          # 'latest' pour faciliter le pull, github.sha pour tracer la version exacte du commit
+          docker tag oc-lettings:ci ${{ vars.DOCKERHUB_USERNAME }}/oc-lettings:latest
+          docker tag oc-lettings:ci ${{ vars.DOCKERHUB_USERNAME }}/oc-lettings:${{ github.sha }}
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/oc-lettings:latest
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/oc-lettings:${{ github.sha }}
+
+      - name: Trigger Render deploy
+        # Render expose un webhook HTTP pour déclencher un redéploiement à la demande ;
+        # on ne le fait que sur main pour ne pas redéployer les branches de feature
+        if: github.ref == 'refs/heads/main' && secrets.RENDER_DEPLOY_HOOK_URL != ''
+        run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
