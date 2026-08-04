@@ -52,7 +52,7 @@ Le seuil de couverture minimal est fixé à 80 % (`setup.cfg`).
 ## Administration
 
 - URL : `/admin`
-- identifiants par défaut (si base initiale) : `admin` / `Abc1234!`
+- identifiants de démonstration (image Docker) : `admin` / `admin123`
 
 ## Variables d'environnement
 
@@ -65,6 +65,12 @@ Copier `.env.example` et adapter les valeurs :
 - `SENTRY_DSN`
 - `SENTRY_TRACES_SAMPLE_RATE`
 - `SENTRY_ENVIRONMENT`
+
+En local, le fichier `.env` est chargé automatiquement au démarrage.
+
+Dans GitHub Actions, toutes les variables sont lues depuis les
+`Repository variables` (`vars.*`) et `Repository secrets` (`secrets.*`),
+sans valeur codée en dur dans le workflow.
 
 ## Sentry
 
@@ -110,9 +116,19 @@ Déclenchement automatique sur `push` et `pull_request`.
 
 Secrets GitHub à définir :
 
-- `DOCKERHUB_USERNAME`
+- `DJANGO_SECRET_KEY`
+- `SENTRY_DSN`
 - `DOCKERHUB_TOKEN`
 - `RENDER_DEPLOY_HOOK_URL`
+
+Variables GitHub à définir :
+
+- `DOCKERHUB_USERNAME`
+- `DJANGO_DEBUG`
+- `DJANGO_ALLOWED_HOSTS`
+- `DJANGO_LOG_LEVEL`
+- `SENTRY_TRACES_SAMPLE_RATE`
+- `SENTRY_ENVIRONMENT`
 
 ## Déploiement (exemple Render)
 

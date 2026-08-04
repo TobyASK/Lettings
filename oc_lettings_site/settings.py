@@ -5,18 +5,31 @@ import os
 from pathlib import Path
 
 import sentry_sdk
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
+from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # .parent remonte de settings.py → oc_lettings_site/ → racine du projet
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Local development: load environment from .env when present.
+load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.getenv(
-    'SECRET_KEY',
-    'fp$9^593hsriajg$_%=5trot9g!1qa@ew(o-1#@=&4%=hp46(s',
-)
+
 # Accepte '1', 'true' ou 'yes' pour éviter les surprises de casse
 DEBUG = os.getenv('DEBUG', 'True').lower() in {'1', 'true', 'yes'}
+
+SECRET_KEY = os.getenv('SECRET_KEY', '')
+if not SECRET_KEY:
+    if DEBUG:
+        # En développement uniquement, on génère une clé volatile
+        # pour éviter toute clé en clair dans le dépôt.
+        SECRET_KEY = get_random_secret_key()
+    else:
+        raise ImproperlyConfigured(
+            'SECRET_KEY environment variable is required when DEBUG is False.'
+        )
 
 # La variable d'env contient une liste séparée par des virgules ;
 # strip() filtre les espaces et élimine les entrées vides après split
