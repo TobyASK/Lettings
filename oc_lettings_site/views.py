@@ -11,9 +11,6 @@ logger = logging.getLogger(__name__)
 def index(request):
     """Render the homepage."""
     logger.info('Homepage requested')
-    if request.GET.get('sentry-debug') == '1':
-        sentry_sdk.capture_message('Sentry debug trigger from homepage')
-        raise RuntimeError('Sentry test exception from homepage trigger')
     return render(request, 'index.html')
 
 
