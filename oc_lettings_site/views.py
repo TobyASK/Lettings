@@ -17,9 +17,6 @@ def index(request):
 def custom_404(request, exception):
     """Render custom 404 page."""
     logger.warning('404 error on path %s', request.path)
-    if request.path.rstrip('/') == '/sentry-debug':
-        sentry_sdk.capture_message('Sentry debug fallback hit from 404 handler')
-        raise RuntimeError('Sentry debug fallback triggered from custom 404 handler')
     return render(request, '404.html', status=404)
 
 
