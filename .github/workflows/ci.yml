@@ -5,19 +5,18 @@ on:
     branches: ["**"]  # déclenché sur toutes les branches, pas seulement main
   pull_request:
 
-env:
-  DJANGO_SETTINGS_MODULE: oc_lettings_site.settings
-  DEBUG: ${{ vars.DJANGO_DEBUG }}
-  ALLOWED_HOSTS: ${{ vars.DJANGO_ALLOWED_HOSTS }}
-  LOG_LEVEL: ${{ vars.DJANGO_LOG_LEVEL }}
-  SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-  SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE }}
-  SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT }}
-
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DJANGO_SETTINGS_MODULE: oc_lettings_site.settings
+      DEBUG: ${{ vars.DJANGO_DEBUG }}
+      ALLOWED_HOSTS: ${{ vars.DJANGO_ALLOWED_HOSTS }}
+      LOG_LEVEL: ${{ vars.DJANGO_LOG_LEVEL }}
+      SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE }}
+      SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT }}
 
     steps:
       - name: Checkout
@@ -42,6 +41,15 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     needs: test  # ce job ne démarre que si le job 'test' a réussi
+    env:
+      DJANGO_SETTINGS_MODULE: oc_lettings_site.settings
+      DEBUG: ${{ vars.DJANGO_DEBUG }}
+      ALLOWED_HOSTS: ${{ vars.DJANGO_ALLOWED_HOSTS }}
+      LOG_LEVEL: ${{ vars.DJANGO_LOG_LEVEL }}
+      SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE }}
+      SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT }}
 
     steps:
       - name: Checkout
