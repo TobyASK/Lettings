@@ -13,7 +13,6 @@ class Profile(models.Model):
     class Meta:
         """Metadata for Profile model."""
 
-        db_table = 'oc_lettings_site_profile'
         verbose_name_plural = 'Profiles'
 
     def __str__(self):

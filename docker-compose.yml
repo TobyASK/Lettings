@@ -4,9 +4,11 @@ services:
     image: oc-lettings:local
     ports:
       - "8000:8000"
+    volumes:
+      - ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3
     environment:
       DEBUG: "False"
       ALLOWED_HOSTS: "localhost,127.0.0.1"
-      SECRET_KEY: "${SECRET_KEY}"
+      SECRET_KEY: "${SECRET_KEY:-local-dev-secret-key}"
       SENTRY_DSN: ""
       SENTRY_ENVIRONMENT: "docker-local"

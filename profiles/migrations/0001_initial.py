@@ -1,4 +1,4 @@
-"""Migrations for profiles app state."""
+"""Create profile table in the dedicated app."""
 
 from django.conf import settings
 from django.db import migrations, models
@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-    """Introduce profile model in migration state without SQL."""
+    """Initial schema for profiles app."""
 
     initial = True
 
@@ -16,38 +16,29 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.SeparateDatabaseAndState(
-            state_operations=[
-                migrations.CreateModel(
-                    name='Profile',
-                    fields=[
-                        (
-                            'id',
-                            models.AutoField(
-                                auto_created=True,
-                                primary_key=True,
-                                serialize=False,
-                                verbose_name='ID',
-                            ),
-                        ),
-                        (
-                            'favorite_city',
-                            models.CharField(blank=True, max_length=64),
-                        ),
-                        (
-                            'user',
-                            models.OneToOneField(
-                                on_delete=django.db.models.deletion.CASCADE,
-                                to=settings.AUTH_USER_MODEL,
-                            ),
-                        ),
-                    ],
-                    options={
-                        'db_table': 'oc_lettings_site_profile',
-                        'verbose_name_plural': 'Profiles',
-                    },
+        migrations.CreateModel(
+            name='Profile',
+            fields=[
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                ('favorite_city', models.CharField(blank=True, max_length=64)),
+                (
+                    'user',
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
                 ),
             ],
-            database_operations=[],
+            options={
+                'verbose_name_plural': 'Profiles',
+            },
         )
     ]

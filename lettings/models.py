@@ -22,7 +22,6 @@ class Address(models.Model):
     class Meta:
         """Metadata for Address model."""
 
-        db_table = 'oc_lettings_site_address'
         verbose_name_plural = 'Addresses'
 
     def __str__(self):
@@ -39,7 +38,6 @@ class Letting(models.Model):
     class Meta:
         """Metadata for Letting model."""
 
-        db_table = 'oc_lettings_site_letting'
         verbose_name_plural = 'Lettings'
 
     def __str__(self):
