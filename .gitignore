@@ -7,3 +7,4 @@ docs/_build/
 staticfiles/
 .env
 *.sqlite3
+!oc-lettings-site.sqlite3
